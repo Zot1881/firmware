@@ -9,6 +9,7 @@
     typedef enum {
         BacklightStrategy_Functional,
         BacklightStrategy_ConstantRGB,
+		BacklightStrategy_PerKeyRGB,
     } backlight_strategy_t;
 
     typedef enum {
@@ -34,8 +35,13 @@
     } rgb_t;
 
 // Variables:
-
     extern rgb_t LedMap_ConstantRGB;
+	
+#if DEVICE_ID == DEVICE_ID_UHK60V2
+	extern bool PerKeyColorByDefaultUseFunctionalColor;
+	extern rgb_t ColorsTable[256];
+	extern uint8_t ColorsMap[LayerId_Count][SLOT_COUNT][MAX_KEY_COUNT_PER_MODULE];
+#endif
 
 // Functions:
 

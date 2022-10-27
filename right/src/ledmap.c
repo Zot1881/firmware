@@ -15,6 +15,7 @@ rgb_t LedMap_ConstantRGB = RGB(0xFF, 0xFF, 0xFF);
 static backlight_strategy_t LedMap_BacklightStrategy = BacklightStrategy_Functional;
 
 static const rgb_t black = RGB(0x00, 0x00, 0x00);
+static const rgb_t white = RGB(0xFF, 0xFF, 0xFF);
 
 static const rgb_t KeyActionColors[] = {
     RGB(0x00, 0x00, 0x00), // KeyActionColor_None
@@ -26,6 +27,10 @@ static const rgb_t KeyActionColors[] = {
     RGB(0x00, 0xFF, 0x00), // KeyActionColor_Mouse
     RGB(0xFF, 0x00, 0xFF), // KeyActionColor_Macro
 };
+
+bool PerKeyColorByDefaultUseFunctionalColor = false;
+rgb_t ColorsTable[256] = {[0 ... 255] = white};
+uint8_t ColorsMap[LayerId_Count][SLOT_COUNT][MAX_KEY_COUNT_PER_MODULE] = {0};
 
 static rgb_t LedMap[SLOT_COUNT][MAX_KEY_COUNT_PER_MODULE] = {
     // All three values must be set to 0 for unused
@@ -158,6 +163,58 @@ static void setPerKeyRGB(const rgb_t* color, uint8_t slotId, uint8_t keyId)
     LedDriverValues[slotId][ledMapItem->blue] = color->blue * KeyBacklightBrightness / 255;
 }
 
+static void updateLedsByPerKeyStrategy() {
+    for (uint8_t slotId=0; slotId<SLOT_COUNT; slotId++) {
+        for (uint8_t keyId=0; keyId<MAX_KEY_COUNT_PER_MODULE; keyId++) {
+            key_action_color_t keyActionColor;
+            key_action_t *keyAction = &CurrentKeymap[ActiveLayer][slotId][keyId];
+
+            if (keyAction->type == KeyActionType_None && IS_MODIFIER_LAYER(ActiveLayer)) {
+                keyAction = &CurrentKeymap[LayerId_Base][slotId][keyId];
+            }
+
+            switch (keyAction->type) {
+                case KeyActionType_Keystroke:
+                    if (keyAction->keystroke.scancode && keyAction->keystroke.modifiers) {
+                        keyActionColor = KeyActionColor_Shortcut;
+                    } else if (keyAction->keystroke.modifiers) {
+                        keyActionColor = KeyActionColor_Modifier;
+                    } else {
+                        keyActionColor = KeyActionColor_Scancode;
+                    }
+                    break;
+                case KeyActionType_SwitchLayer:
+                    keyActionColor = KeyActionColor_SwitchLayer;
+                    break;
+                case KeyActionType_Mouse:
+                    keyActionColor = KeyActionColor_Mouse;
+                    break;
+                case KeyActionType_SwitchKeymap:
+                    keyActionColor = KeyActionColor_SwitchKeymap;
+                    break;
+                case KeyActionType_PlayMacro:
+                    keyActionColor = KeyActionColor_Macro;
+                    break;
+                default:
+                    keyActionColor = KeyActionColor_None;
+                    break;
+            }
+
+			if (keyActionColor == KeyActionColor_None)
+			{
+				setPerKeyRGB(&KeyActionColors[keyActionColor], slotId, keyId);
+			}
+			else
+			{
+				if (PerKeyColorByDefaultUseFunctionalColor == 1 && ColorsMap[ActiveLayer][slotId][keyId] == 0)
+					setPerKeyRGB(&KeyActionColors[keyActionColor], slotId, keyId);
+				else
+					setPerKeyRGB(&ColorsTable[ColorsMap[ActiveLayer][slotId][keyId]], slotId, keyId);
+			}
+        }
+    }
+}
+
 static void updateLedsByConstantRgbStrategy() {
     for (uint8_t slotId=0; slotId<SLOT_COUNT; slotId++) {
         for (uint8_t keyId=0; keyId<MAX_KEY_COUNT_PER_MODULE; keyId++) {
@@ -216,6 +273,9 @@ void UpdateLayerLeds(void) {
         case BacklightStrategy_ConstantRGB:
             updateLedsByConstantRgbStrategy();
             break;
+		case BacklightStrategy_PerKeyRGB:
+			updateLedsByPerKeyStrategy();
+			break;
     }
 }
 

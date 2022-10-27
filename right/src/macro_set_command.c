@@ -210,10 +210,63 @@ static void backlightStrategy(const char* arg1, const char *textEnd)
         SetLedBacklightStrategy(BacklightStrategy_ConstantRGB);
         LedSlaveDriver_UpdateLeds();
     }
+#if DEVICE_ID == DEVICE_ID_UHK60V2
+	else if (TokenMatches(arg1, textEnd, "perKey")) {
+        SetLedBacklightStrategy(BacklightStrategy_PerKeyRGB);
+        LedSlaveDriver_UpdateLeds();
+    }
+#endif
     else {
         Macros_ReportError("parameter not recognized:", arg1, textEnd);
     }
 }
+
+#if DEVICE_ID == DEVICE_ID_UHK60V2
+static void perKeyRgb(const char* arg1, const char *textEnd)
+{
+	if (TokenMatches(arg1, textEnd, "default_coloring")) {
+		const char* isEnabled = NextTok(arg1,  textEnd);
+	
+		uint8_t isEnabled_value;
+		
+		isEnabled_value = Macros_ParseBoolean(isEnabled, textEnd);
+		
+		PerKeyColorByDefaultUseFunctionalColor = isEnabled_value;
+		LedSlaveDriver_UpdateLeds();
+	} else if (TokenMatches(arg1, textEnd, "color")) {
+		const char* index = NextTok(arg1,  textEnd);
+        const char* r = NextTok(index,  textEnd);
+        const char* g = NextTok(r, textEnd);
+        const char* b = NextTok(g, textEnd);
+		
+		rgb_t color;
+		uint8_t color_index;
+		
+		color_index = Macros_ParseInt(index, textEnd, NULL);
+        color.red = Macros_ParseInt(r, textEnd, NULL);
+        color.green = Macros_ParseInt(g, textEnd, NULL);
+        color.blue = Macros_ParseInt(b, textEnd, NULL);
+		
+		ColorsTable[color_index] = color;
+		LedSlaveDriver_UpdateLeds();
+    } else if (TokenMatches(arg1, textEnd, "change")) {
+        const char* layer = NextTok(arg1,  textEnd);
+		const char* slot = NextTok(layer, textEnd);
+        const char* key = NextTok(slot, textEnd);
+        const char* color = NextTok(key, textEnd);
+		
+        uint8_t layer_index = Macros_ParseInt(layer, textEnd, NULL);
+        uint8_t slot_index = Macros_ParseInt(slot, textEnd, NULL);
+        uint8_t key_index = Macros_ParseInt(key, textEnd, NULL);
+		uint8_t color_index = Macros_ParseInt(color, textEnd, NULL);
+		
+		ColorsMap[layer_index][slot_index][key_index] = color_index;
+		LedSlaveDriver_UpdateLeds();
+    } else {
+        Macros_ReportError("parameter not recognized:", arg1, textEnd);
+    }
+}
+#endif
 
 static void constantRgb(const char* arg1, const char *textEnd)
 {
@@ -226,8 +279,7 @@ static void constantRgb(const char* arg1, const char *textEnd)
         LedMap_ConstantRGB.blue = Macros_ParseInt(b, textEnd, NULL);
         SetLedBacklightStrategy(BacklightStrategy_ConstantRGB);
         LedSlaveDriver_UpdateLeds();
-    }
-    else {
+    } else {
         Macros_ReportError("parameter not recognized:", arg1, textEnd);
     }
 }
@@ -256,6 +308,11 @@ static void backlight(const char* arg1, const char *textEnd)
     else if (TokenMatches(arg1, textEnd, "constantRgb")) {
         constantRgb(proceedByDot(arg1, textEnd), textEnd);
     }
+#if DEVICE_ID == DEVICE_ID_UHK60V2
+	else if (TokenMatches(arg1, textEnd, "perKey")) {
+        perKeyRgb(proceedByDot(arg1, textEnd), textEnd);
+    }
+#endif
     else {
         Macros_ReportError("parameter not recognized:", arg1, textEnd);
     }
