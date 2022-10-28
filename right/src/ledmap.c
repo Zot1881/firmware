@@ -200,17 +200,17 @@ static void updateLedsByPerKeyStrategy() {
                     break;
             }
 
-			if (keyActionColor == KeyActionColor_None)
-			{
-				setPerKeyRGB(&KeyActionColors[keyActionColor], slotId, keyId);
-			}
-			else
-			{
-				if (PerKeyColorByDefaultUseFunctionalColor == 1 && ColorsMap[ActiveLayer][slotId][keyId] == 0)
-					setPerKeyRGB(&KeyActionColors[keyActionColor], slotId, keyId);
-				else
-					setPerKeyRGB(&ColorsTable[ColorsMap[ActiveLayer][slotId][keyId]], slotId, keyId);
-			}
+            if (keyActionColor == KeyActionColor_None)
+            {
+                setPerKeyRGB(&KeyActionColors[keyActionColor], slotId, keyId);
+            }
+            else
+            {
+                if (PerKeyColorByDefaultUseFunctionalColor == 1 && ColorsMap[ActiveLayer][slotId][keyId] == 0)
+                    setPerKeyRGB(&KeyActionColors[keyActionColor], slotId, keyId);
+                else
+                    setPerKeyRGB(&ColorsTable[ColorsMap[ActiveLayer][slotId][keyId]], slotId, keyId);
+            }
         }
     }
 }
@@ -273,9 +273,9 @@ void UpdateLayerLeds(void) {
         case BacklightStrategy_ConstantRGB:
             updateLedsByConstantRgbStrategy();
             break;
-		case BacklightStrategy_PerKeyRGB:
-			updateLedsByPerKeyStrategy();
-			break;
+        case BacklightStrategy_PerKeyRGB:
+            updateLedsByPerKeyStrategy();
+            break;
     }
 }
 
