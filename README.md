@@ -4,7 +4,7 @@ This repository is a fork of the  of the [Ultimate Hacking Keyboard firmware](ht
 
 Main purpose of this fork is to add ability to configure per key color. 
 
-To acheve this new cacro commands were added:
+To acheve this new macro commands were added:
 
 Enable new coloring scheme via perKey option in backlight.strategy command
 
