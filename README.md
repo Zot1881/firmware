@@ -43,3 +43,26 @@ Example :
     set backlight.perKey.change 0 2 0 1 //key module 0
     set backlight.perKey.change 0 2 1 1 //key module 1
     set backlight.perKey.change 0 2 2 1 //key module 2
+
+
+# Prepare development environment on Ubuntu:
+
+    apt install curl git
+    apt install binutils-arm-none-eabi gcc-arm-none-eabi libnewlib-arm-none-eabi make
+
+    curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash 
+    source ~/.bashrc 
+    nvm install 16.15.0
+
+    git clone --recursive https://github.com/Zot1881/firmware.git
+
+in firmware/lib/agent/
+
+    npm install 
+    npm run build
+
+in firmware/scripts
+
+    npm install
+    ./generate-versions-h.js
+    ./make-release.js
