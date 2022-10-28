@@ -22,6 +22,8 @@ first number is index in array of 256 elements, next 3 numbers are rgb color
 
 Specify key color that was added to color map.
 
+![uhkv2_scheme_small](https://user-images.githubusercontent.com/14919498/198552064-bc501fbd-5378-4a77-9007-0690c6033d59.JPEG)
+
 layer index
 
 slot index
