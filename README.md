@@ -6,21 +6,29 @@ Main purpose of this fork is to add ability to configure per key color.
 
 To acheve this new cacro commands were added:
 
+Enable new coloring scheme via perKey option in backlight.strategy command
+
     COMMAND = set backlight.strategy { functional | constantRgb | perKey}
 
-//1 - use colors from functional coloring if no color for key was specified
+Use default coloring from functional coloring if no color for key was specified.
 
-    COMMAND = set backlight.perKey.default_coloring BOOLEAN
+    COMMAND = set backlight.perKey.default_coloring BOOLEAN [0 or 1]
 
-//first number is index in array of 256 elements
-// next 3 numbers are rgb color
+Set color to color map
+
+first number is index in array of 256 elements, next 3 numbers are rgb color
 
     COMMAND = set backlight.perKey.color <number 0-255 (NUMBER)> <number 0-255 (NUMBER)> <number 0-255 (NUMBER)> <number 0-255 (NUMBER)>
 
-//layer index
-//slot index
-//key index
-//index color array that was set with backlight.perKey.color
+Specify key color that was added to color map.
+
+layer index
+
+slot index
+
+key index
+
+index color array that was set with backlight.perKey.color
 
     COMMAND = set backlight.perKey.change <number 0-255 (NUMBER)> <number 0-255 (NUMBER)> <number 0-255 (NUMBER)> <number 0-255 (NUMBER)>
 
