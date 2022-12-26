@@ -104,6 +104,7 @@ The following grammar is supported:
     COMMAND = set mouseKeys.{move|scroll}.deceleratedSpeed <px/s, ~200/10 (NUMBER)>
     COMMAND = set mouseKeys.{move|scroll}.acceleratedSpeed <px/s, ~1600/50 (NUMBER)>
     COMMAND = set mouseKeys.{move|scroll}.axisSkew <multiplier, 0.5-2.0 (FLOAT)>
+    COMMAND = set i2cBaudRate <baud rate, default 100000(NUMBER)>
     COMMAND = set diagonalSpeedCompensation BOOLEAN
     COMMAND = set chordingDelay <time in ms (NUMBER)>
     COMMAND = set stickyModifiers {never|smart|always}
@@ -122,7 +123,7 @@ The following grammar is supported:
     COMMAND = set leds.enabled BOOLEAN
     COMMAND = set leds.brightness <0-1 multiple of default (FLOAT)>
     COMMAND = set leds.fadeTimeout <minutes to fade after (NUMBER)>
-    COMMAND = set modifierLayerTriggers.{shift|alt|super|control} {left|right|both}
+    COMMAND = set modifierLayerTriggers.{shift|alt|super|ctrl} {left|right|both}
     CONDITION = {ifShortcut | ifNotShortcut} [IFSHORTCUTFLAGS]* [KEYID]+
     CONDITION = {ifGesture | ifNotGesture} [IFSHORTCUTFLAGS]* [KEYID]+
     CONDITION = {ifPrimary | ifSecondary}
@@ -147,7 +148,7 @@ The following grammar is supported:
     MODIFIER = autoRepeat
     IFSHORTCUTFLAGS = noConsume | transitive | anyOrder | orGate | timeoutIn <time in ms (NUMBER)> | cancelIn <time in ms(NUMBER)>
     DIRECTION = {left|right|up|down}
-    LAYERID = {fn|mouse|mod|base|fn2|fn3|fn4|fn5|alt|shift|super|control}|last|previous
+    LAYERID = {fn|mouse|mod|base|fn2|fn3|fn4|fn5|alt|shift|super|ctrl}|last|previous
     KEYMAPID = <abbrev>|last
     MACROID = last|CHAR|NUMBER
     NUMBER = [0-9]+ | -[0-9]+ | #<register idx (NUMBER)> | #key | @<relative macro action index(NUMBER)> | %<key idx in postponer queue (NUMBER)>
@@ -193,9 +194,11 @@ The following grammar is supported:
     COMMAND = switchLayer LAYERID
     COMMAND = switchKeymapLayer KEYMAPID LAYERID
     COMMAND = resolveNextKeyEq <queue position (NUMBER)> KEYID {<time in ms>|untilRelease} <action adr (ADDRESS)> <action adr (ADDRESS)>
-    ##########
-    #REMOVEWD#
-    ##########
+    COMMAND = set modifierLayerTriggers.{control} {left|right|both}
+    LAYERID = control
+    #########
+    #REMOVED#
+    #########
     COMMAND = setExpDriver <baseSpeed (FLOAT:0.0)> <speed (FLOAT:1.0)> <acceleration (FLOAT:0.5)> <midSpeed (FLOAT:3000)>
     COMMAND = setSplitCompositeKeystroke {0|1}
     COMMAND = setActivateOnRelease {0|1}
@@ -213,6 +216,7 @@ The following grammar is supported:
     - If the given time is zero, i.e. `<time> = 0`, the led text will be set indefinitely (until the display is refreshed by other text) and this command will returns immediately (non-blocking).
 - `progressHue` or better `autoRepeat progressHue` will slowly adjust constantRGB value in order to rotate the per-key-RGB backlight through all hues.
 - `resetTrackpoint` resets the internal trackpoint board. Can be used to recover the trackpoint from drift conditions. Drifts usually happen if you keep the cursor moving at slow constant speeds, because of the boards's internal adaptive calibration. Since the board's parameters cannot be altered, the only way around is or you to learn not to do the type of movement which triggers them.
+- `i2cBaudRate <baud rate, default 100000(NUMBER)>` sets i2c baud rate. Lowering this value may improve module reliability, while increasing latency.
 
 ### Triggering keyboard actions (pressing keys, clicking, etc.):
 
@@ -239,6 +243,7 @@ The following grammar is supported:
         - normal non-macro modifiers (not accompanied by a scancode) are treated as `input` by default.
         - macro modifiers are treated as `output`.
     - `{p|r|h|t}` - press release hold tap - by default corresponds to the command used to invoke the sequence, but can be overriden for any.
+    - windows, super, gui - all these are different names for the same key. For sake of consistency, we choose `gui`.
 
 ### Control flow, macro execution (aka "functions"):
 
@@ -511,7 +516,7 @@ For the purpose of toggling functionality on and off, and for global constants m
     - `backlight.constantRgb.rgb NUMBER NUMBER NUMBER` allows setting custom constant colour for entire keyboard. E.g.: `set backlight.strategy constantRgb; set backlight.constantRgb.rgb 255 0 0` to make entire keyboard shine red.
 
 - modifier layer triggers:
-    - `set modifierLayerTriggers.{shift|alt|super|control} { left | right | both }` controls whether modifier layers are triggered by left or right or either of the modifiers.
+    - `set modifierLayerTriggers.{shift|alt|super|ctrl} {left|right|both}` controls whether modifier layers are triggered by left or right or either of the modifiers.
 
 ### Argument parsing rules:
 

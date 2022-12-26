@@ -24,8 +24,16 @@
 #include "slave_drivers/uhk_module_driver.h"
 #include <stddef.h>
 #include <string.h>
+#include "usb_commands/usb_command_exec_macro_command.h"
 
-macro_reference_t AllMacros[MAX_MACRO_NUM];
+macro_reference_t AllMacros[MAX_MACRO_NUM] = {
+    // 254 is reserved for USB command execution
+    // 255 is reserved as empty value
+    // TODO: make sure parser accepts just 254 user-defined macros
+    [254] = {
+        .macroActionsCount = 1,
+    }
+};
 uint8_t AllMacrosCount;
 
 uint8_t MacroBasicScancodeIndex = 0;
@@ -1013,15 +1021,10 @@ uint8_t Macros_ParseLayerId(const char* arg1, const char* cmdEnd)
         case 'c':
             if (TokenMatches(arg1, cmdEnd, "current")) {
                 return ActiveLayer;
+            } else if (TokenMatches(arg1, cmdEnd, "ctrl")) {
+                return LayerId_Ctrl;
             } else if (TokenMatches(arg1, cmdEnd, "control")) {
-                return LayerId_Control;
-            }
-            break;
-        case 'm':
-            if (TokenMatches(arg1, cmdEnd, "mouse")) {
-                return LayerId_Mouse;
-            } else if (TokenMatches(arg1, cmdEnd, "mod")) {
-                return LayerId_Mod;
+                return LayerId_Ctrl;
             }
             break;
         case 'f':
@@ -1037,9 +1040,21 @@ uint8_t Macros_ParseLayerId(const char* arg1, const char* cmdEnd)
                 return LayerId_Fn5;
             }
             break;
+        case 'g':
+            if (TokenMatches(arg1, cmdEnd, "gui")) {
+                return LayerId_Gui;
+            }
+            break;
         case 'l':
             if (TokenMatches(arg1, cmdEnd, "last")) {
                 return lastLayerIdx;
+            }
+            break;
+        case 'm':
+            if (TokenMatches(arg1, cmdEnd, "mouse")) {
+                return LayerId_Mouse;
+            } else if (TokenMatches(arg1, cmdEnd, "mod")) {
+                return LayerId_Mod;
             }
             break;
         case 'p':
@@ -1051,7 +1066,7 @@ uint8_t Macros_ParseLayerId(const char* arg1, const char* cmdEnd)
             if (TokenMatches(arg1, cmdEnd, "shift")) {
                 return LayerId_Shift;
             } else if (TokenMatches(arg1, cmdEnd, "super")) {
-                return LayerId_Super;
+                return LayerId_Gui;
             }
             break;
     }
@@ -2978,10 +2993,22 @@ static macro_result_t endMacro(void)
 
 static void loadAction()
 {
-    //otherwise parse next action
-    ValidatedUserConfigBuffer.offset = s->ms.bufferOffset;
-    ParseMacroAction(&ValidatedUserConfigBuffer, &s->ms.currentMacroAction);
-    s->ms.bufferOffset = ValidatedUserConfigBuffer.offset;
+    if (s->ms.currentMacroIndex == MacroIndex_UsbCmdReserved) {
+        // fill in action from memory
+        s->ms.currentMacroAction = (macro_action_t){
+            .type = MacroActionType_Command,
+            .cmd = {
+                .text = UsbMacroCommand,
+                .textLen = UsbMacroCommandLength,
+                .cmdCount = CountCommands(UsbMacroCommand, UsbMacroCommandLength)
+            }
+        };
+    } else {
+        // parse one macro action
+        ValidatedUserConfigBuffer.offset = s->ms.bufferOffset;
+        ParseMacroAction(&ValidatedUserConfigBuffer, &s->ms.currentMacroAction);
+        s->ms.bufferOffset = ValidatedUserConfigBuffer.offset;
+    }
 
     memset(&s->as, 0, sizeof s->as);
 
